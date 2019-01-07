@@ -1,0 +1,8 @@
+# IntelliJ IDEA
+.idea/workspace.xml
+
+# Build output
+/target
+
+# Misc
+**/*.rs.bk
