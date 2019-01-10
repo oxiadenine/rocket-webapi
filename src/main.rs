@@ -2,11 +2,12 @@
 
 #[macro_use] extern crate rocket;
 
-#[get("/")]
-fn index() -> &'static str {
-    "Welcome to Rocket Web API!"
-}
+mod routing;
 
 fn main() {
-    rocket::ignite().mount("/", routes![index]).launch();
+    let routes = routes![routing::api_routing::api];
+
+    rocket::ignite()
+        .mount("/", routes)
+        .launch();
 }
