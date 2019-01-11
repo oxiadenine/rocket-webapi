@@ -1,10 +1,11 @@
 use rocket_contrib::json::Json;
 use crate::models::Fruit;
 use crate::helpers::JsonResponse;
+use crate::helpers::Response;
 use crate::entities::FruitEntity;
 
 #[get("/api/fruits")]
-pub fn all() -> Json<JsonResponse<Vec<Fruit>, & 'static str>> {
+pub fn all() -> Json<Response<Vec<Fruit>, & 'static str>> {
     let fruits = FruitEntity::all()
         .into_iter()
         .map(|fe| Fruit {
@@ -14,13 +15,13 @@ pub fn all() -> Json<JsonResponse<Vec<Fruit>, & 'static str>> {
         })
         .collect();
 
-    let response = JsonResponse::success(fruits);
+    let response = JsonResponse::Success(fruits);
 
-    Json(response)
+    Json(response.into_inner())
 }
 
 #[get("/api/fruits/<id>")]
-pub fn one(id: i64) -> Json<JsonResponse<Fruit, & 'static str>> {
+pub fn one(id: i64) -> Json<Response<Fruit, & 'static str>> {
     let response = match FruitEntity::one(id) {
         Some(fe) => {
             let fruit = Fruit {
@@ -29,16 +30,16 @@ pub fn one(id: i64) -> Json<JsonResponse<Fruit, & 'static str>> {
                 description: fe.description
             };
 
-            JsonResponse::success(fruit)
+            JsonResponse::Success(fruit)
         },
-        None => JsonResponse::failure("Fruit does not exists")
+        None => JsonResponse::Failure("Fruit does not exists")
     };
 
-    Json(response)
+    Json(response.into_inner())
 }
 
 #[post("/api/fruits", data = "<fruit>")]
-pub fn new(fruit: Json<Fruit>) -> Json<JsonResponse<Fruit, & 'static str>> {
+pub fn new(fruit: Json<Fruit>) -> Json<Response<Fruit, & 'static str>> {
     let response = if FruitEntity::find(fruit.no.clone().unwrap()).is_none() {
         let mut fruit_entity = FruitEntity {
             id: 0,
@@ -54,16 +55,16 @@ pub fn new(fruit: Json<Fruit>) -> Json<JsonResponse<Fruit, & 'static str>> {
             description: fruit_entity.description
         };
 
-        JsonResponse::success(fruit)
+        JsonResponse::Success(fruit)
     } else {
-        JsonResponse::failure("Fruit already exists")
+        JsonResponse::Failure("Fruit already exists")
     };
 
-    Json(response)
+    Json(response.into_inner())
 }
 
 #[put("/api/fruits/<id>", data = "<fruit>")]
-pub fn edit(id: i64, fruit: Json<Fruit>) -> Json<JsonResponse<Fruit, & 'static str>> {
+pub fn edit(id: i64, fruit: Json<Fruit>) -> Json<Response<Fruit, & 'static str>> {
     let fruit = fruit.into_inner();
 
     let response = match FruitEntity::one(id).and_then(|fe| {
@@ -82,18 +83,18 @@ pub fn edit(id: i64, fruit: Json<Fruit>) -> Json<JsonResponse<Fruit, & 'static s
                 description: fe.description
             };
 
-            JsonResponse::success(fruit)
+            JsonResponse::Success(fruit)
         },
-        None => JsonResponse::failure("Fruit does not exists")
+        None => JsonResponse::Failure("Fruit does not exists")
     };
 
-    Json(response)
+    Json(response.into_inner())
 }
 
 #[delete("/api/fruits/<id>")]
-pub fn delete(id: i64) -> Json<JsonResponse<Fruit, & 'static str>> {
+pub fn delete(id: i64) -> Json<Response<Fruit, & 'static str>> {
     let response = if FruitEntity::one(id).is_none() {
-        JsonResponse::failure("Fruit does not exists")
+        JsonResponse::Failure("Fruit does not exists")
     } else {
         let fruit_entity = FruitEntity::delete(id);
 
@@ -103,8 +104,8 @@ pub fn delete(id: i64) -> Json<JsonResponse<Fruit, & 'static str>> {
             description: fruit_entity.description
         };
 
-        JsonResponse::success(fruit)
+        JsonResponse::Success(fruit)
     };
 
-    Json(response)
+    Json(response.into_inner())
 }
