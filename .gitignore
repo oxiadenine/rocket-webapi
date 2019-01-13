@@ -3,7 +3,7 @@
 *.iml
 
 # Build output
-/target
+target/
 
 # Misc
 **/*.rs.bk
