@@ -1,6 +1,6 @@
-# IntelliJ IDEA
-.idea/workspace.xml
-.idea/dataSources*
+# IDE metadata
+.idea/
+*.iml
 
 # Build output
 /target
