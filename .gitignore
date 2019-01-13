@@ -1,8 +1,12 @@
 # IntelliJ IDEA
 .idea/workspace.xml
+.idea/dataSources*
 
 # Build output
 /target
 
 # Misc
 **/*.rs.bk
+
+# Database
+database/*.sqlite3

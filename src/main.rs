@@ -1,13 +1,20 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
 #[macro_use] extern crate rocket;
+#[macro_use] extern crate rocket_contrib;
 #[macro_use] extern crate serde_derive;
-#[macro_use] extern crate lazy_static;
+#[macro_use] extern crate diesel;
 
 mod routing;
-mod models;
 mod helpers;
+mod models;
 mod entities;
+mod schema;
+
+use diesel::SqliteConnection;
+
+#[database("fruit_store")]
+pub struct DbConnection(SqliteConnection);
 
 fn main() {
     let routes = routes![
@@ -20,6 +27,7 @@ fn main() {
     ];
 
     rocket::ignite()
+        .attach(DbConnection::fairing())
         .mount("/", routes)
         .launch();
 }

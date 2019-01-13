@@ -1,71 +1,70 @@
-use std::sync::Mutex;
+use diesel::prelude::*;
+use crate::schema::fruit;
+use crate::schema::fruit::dsl::{fruit as fruits};
 
-#[derive(Clone)]
+#[derive(Queryable, Insertable)]
+#[table_name = "fruit"]
 pub struct FruitEntity {
-    pub id: i64,
+    pub id: i32,
     pub no: String,
-    pub description: Option<String>
-}
-
-lazy_static! {
-    static ref FRUITS: Mutex<Vec<FruitEntity>> = Mutex::new(vec![]);
-    static ref INDEX: Mutex<i64> = Mutex::new(1);
+    pub description: String
 }
 
 impl FruitEntity {
-    pub fn all() -> Vec<FruitEntity> {
-        FRUITS.lock().unwrap().clone()
+    pub fn all(conn: &SqliteConnection) -> Vec<FruitEntity> {
+        fruits.load::<FruitEntity>(conn).unwrap()
     }
 
-    pub fn find(no: String) -> Option<FruitEntity> {
-        let fruit_entities = FRUITS.lock().unwrap();
-
-        match fruit_entities.iter().find(|fe| fe.no == no) {
-            Some(fe) => Some(fe.clone()),
-            None => None
+    pub fn one(conn: &SqliteConnection, id: i32) -> Option<FruitEntity> {
+        match fruits.find(id).first(conn) {
+            Ok(fe) => Some(fe),
+            _ => None
         }
     }
 
-    pub fn one(id: i64) -> Option<FruitEntity> {
-        let fruit_entities = FRUITS.lock().unwrap();
+    pub fn insert(conn: &SqliteConnection, fields: (String, String)) -> Option<FruitEntity> {
+        let values = (fruit::no.eq(fields.0), fruit::description.eq(fields.1));
 
-        match fruit_entities.iter().find(|fe| fe.id == id) {
-            Some(fe) => Some(fe.clone()),
-            None => None
+        let result = conn.transaction::<FruitEntity, _, _>(|| {
+            diesel::insert_into(fruits)
+                .values(&values)
+                .execute(conn)
+                .and_then(|_| { fruits.order(fruit::id.desc()).first(conn) })
+        });
+
+        match result {
+            Ok(fe) => Some(fe),
+            _ => None
         }
     }
 
-    pub fn insert(mut fruit_entity: FruitEntity) -> FruitEntity {
-        let mut fruit_entities = FRUITS.lock().unwrap();
+    pub fn update(conn: &SqliteConnection, fields: (i32, String)) -> Option<FruitEntity> {
+        let id = fields.0;
 
-        fruit_entity.id = *INDEX.lock().unwrap();
+        let result = diesel::update(fruits.find(id))
+            .set(fruit::description.eq(fields.1))
+            .execute(conn)
+            .and_then(|_| { fruits.find(id).first(conn) });
 
-        fruit_entities.push(fruit_entity);
-
-        *INDEX.lock().unwrap() += 1;
-
-        fruit_entities.last().unwrap().clone()
+        match result {
+            Ok(fe) => Some(fe),
+            _ => None
+        }
     }
 
-    pub fn update(fruit_entity: FruitEntity) -> FruitEntity {
-        let mut fruit_entities = FRUITS.lock().unwrap();
+    pub fn delete(conn: &SqliteConnection, id: i32) -> Option<FruitEntity> {
+        let result = fruits.find(id)
+            .first(conn)
+            .and_then(|fe| {
+                diesel::delete(fruits.filter(fruit::id.eq(id)))
+                    .execute(conn);
 
-        let old_fruit_entity = fruit_entities.iter_mut()
-            .find(|fe| fe.id == fruit_entity.id).unwrap();
+                Ok(fe)
+            });
 
-        old_fruit_entity.description = fruit_entity.description.clone();
-
-        old_fruit_entity.clone()
-    }
-
-    pub fn delete(id: i64) -> FruitEntity {
-        let mut fruit_entities = FRUITS.lock().unwrap();
-
-        let fruit_entity = fruit_entities.iter()
-            .find(|fe| fe.id == id).unwrap().clone();
-
-        fruit_entities.retain(|fe| fe.id != id);
-
-        fruit_entity
+        match result {
+            Ok(fe) => Some(fe),
+            _ => None
+        }
     }
 }
