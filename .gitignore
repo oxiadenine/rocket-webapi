@@ -1,12 +1,13 @@
-# IDE metadata
+# IDE
 .idea/
-*.iml
+.vscode/
 
-# Build output
+# Build
 target/
-
-# Misc
-**/*.rs.bk
 
 # Database
 database/*.sqlite3
+
+# Security
+
+# Configuration
