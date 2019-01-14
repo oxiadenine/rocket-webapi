@@ -6,13 +6,12 @@ The database engine used by the project is [SQLite](https://www.sqlite.org/).
 
 ### Getting Started
 
-First, install [Diesel](http://diesel.rs/) with `cargo install diesel_cli --no-default-features --features sqlite` 
-for database management.
+First, follow [Diesel](http://diesel.rs/guides/getting-started/) instructions to install the Diesel CLI.
 
 To create and migrate the database:
 
 1. Initialize database with `diesel setup`
-2. Migrate database with `diesel migration run` and `diesel migration redo`
+2. Migrate database with `diesel migration run`
 
 To start the Rocket server:
 
