@@ -57,7 +57,7 @@ impl FruitEntity {
             .first(conn)
             .and_then(|fe| {
                 diesel::delete(fruits.filter(fruit::id.eq(id)))
-                    .execute(conn);
+                    .execute(conn)?;
 
                 Ok(fe)
             });

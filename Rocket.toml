@@ -1,5 +1,5 @@
 [global.databases]
-fruit_store = { url = "database/fruit_store.sqlite3" }
+fruit_store = { url = "db/fruit_store.sqlite3" }
 
 [development]
 address = "localhost"
